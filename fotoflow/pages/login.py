@@ -24,7 +24,7 @@ def login_page() -> rx.Component:
                 rx.vstack(
                     rx.center(
                         rx.image(
-                            src="/logo.jpg",
+                            src="/images/logo.jpg",
                             width="2.5em",
                             height="auto",
                             border_radius="25%",
@@ -42,14 +42,14 @@ def login_page() -> rx.Component:
                     ),
                     rx.vstack(
                         rx.text(
-                            "Email address",
+                            "Dirección de correo",
                             size="3",
                             weight="medium",
                             text_align="left",
                             width="100%",
                         ),
                         rx.input(
-                            placeholder="user@reflex.dev",
+                            placeholder="usuario@example.com",
                             type="email",
                             size="3",
                             width="100%",
@@ -69,7 +69,7 @@ def login_page() -> rx.Component:
                             width="100%",
                         ),
                         rx.input(
-                            placeholder="Enter your password",
+                            placeholder="Introduzca su contraseña",
                             type="password",
                             size="3",
                             width="100%",
@@ -91,7 +91,6 @@ def login_page() -> rx.Component:
             bg="var(--bg)",  # Color de fondo opcional
         )
     )
-
 
 
 """def login_page() -> rx.Component:
