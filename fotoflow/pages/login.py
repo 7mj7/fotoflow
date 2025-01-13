@@ -1,7 +1,11 @@
+# pages/login.py
+
 import reflex as rx
 
+from fotoflow.state.auth_state import AuthState
 
-class LoginState(rx.State):
+
+'''class LoginState(rx.State):
     """El estado del formulario de login."""
 
     email: str = ""
@@ -14,10 +18,11 @@ class LoginState(rx.State):
             return
         self.error = ""
         return rx.redirect("/")
+'''
 
 
 # copiado de https://reflex.dev/docs/recipes/auth/login-form/
-def login_page() -> rx.Component:
+'''def login_page() -> rx.Component:
     return rx.box(
         rx.center(
             rx.card(
@@ -51,8 +56,11 @@ def login_page() -> rx.Component:
                         rx.input(
                             placeholder="usuario@example.com",
                             type="email",
+                            name="username",
                             size="3",
                             width="100%",
+                            value=AuthState.username,
+                            on_change=AuthState.set_username,
                         ),
                         justify="start",
                         spacing="2",
@@ -71,15 +79,20 @@ def login_page() -> rx.Component:
                         rx.input(
                             placeholder="Introduzca su contraseña",
                             type="password",
+                            name="password",
                             size="3",
                             width="100%",
+                            value=AuthState.password,
+                            on_change=AuthState.set_password,                            
                         ),
                         spacing="2",
                         width="100%",
                     ),
                     rx.button("Acceder", size="3", width="100%"),
                     spacing="6",
-                    width="100%",
+                    width="100%",                    
+                    type_="submit",
+                    on_submit=AuthState.handle_login,
                 ),
                 size="4",
                 max_width="28em",
@@ -91,9 +104,9 @@ def login_page() -> rx.Component:
             bg="var(--bg)",  # Color de fondo opcional
         )
     )
+'''
 
-
-"""def login_page() -> rx.Component:
+def login_page() -> rx.Component:
     return rx.center(
         rx.vstack(
             rx.heading("Iniciar Sesión"),
@@ -102,18 +115,20 @@ def login_page() -> rx.Component:
                     rx.input(
                         placeholder="Email",
                         type_="email",
-                        on_change=LoginState.set_email,
+                        value=AuthState.username,
+                        on_change=AuthState.set_username,
                     ),
                     rx.input(
                         placeholder="Contraseña",
                         type_="password",
-                        on_change=LoginState.set_password,
+                        value=AuthState.password,
+                        on_change=AuthState.set_password,                            
                     ),
                     rx.button("Iniciar Sesión", type_="submit"),
-                    rx.text(LoginState.error, color="red"),
+                    rx.text(AuthState.error, color="red"),
                 ),
-                on_submit=LoginState.login,
+                on_submit=AuthState.handle_login,
             ),
         ),
         padding="2em",
-    )"""
+    )
