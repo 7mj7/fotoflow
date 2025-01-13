@@ -3,11 +3,15 @@
 import reflex as rx
 
 from rxconfig import config
+from fotoflow.state.auth_state import AuthState
 
 import httpx
+import os
+
 
 class Galery(rx.Base):
-    """ Modelo de datos para una galería."""
+    """Modelo de datos para una galería."""
+
     id: int
     name: str  # Nombre de la galería
     description: str  # Descripción opcional de la galería
@@ -17,26 +21,81 @@ class Galery(rx.Base):
 
 class GalleryState(rx.State):
     """Estado para la gestión de galerías."""
+        
+    galleries: list[Galery] = []
+    is_loading: bool = False
+    error_message: str = ""
 
-    
-    # Lista de galerías
-    galleries: list[Galery] = [
-        Galery(id=1, name="Galería 1", description="Descripción de la galería 1", photographer_id=1, client_id=1),
-        Galery(id=2, name="Galería 2", description="Descripción de la galería 2", photographer_id=2, client_id=2),
-        Galery(id=3, name="Galería 3", description="Descripción de la galería 3", photographer_id=3, client_id=3),
-        Galery(id=4, name="Galería 4", description="Descripción de la galería 4", photographer_id=4, client_id=4),
+    # Lista de galerías de prueba
+    test_galleries: list[Galery] = [
+        Galery(
+            id=1,
+            name="Galería 1",
+            description="Descripción de la galería 1",
+            photographer_id=1,
+            client_id=1,
+        ),
+        Galery(
+            id=2,
+            name="Galería 2",
+            description="Descripción de la galería 2",
+            photographer_id=2,
+            client_id=2,
+        ),
+        Galery(
+            id=3,
+            name="Galería 3",
+            description="Descripción de la galería 3",
+            photographer_id=3,
+            client_id=3,
+        ),
+        Galery(
+            id=4,
+            name="Galería 4",
+            description="Descripción de la galería 4",
+            photographer_id=4,
+            client_id=4,
+        ),
     ]
 
-    
+    """ Esto es lo siguiente """
     galleries: list[Galery] = []
-    #Metodo para obtener las galerias desde la API
+
+    # Metodo para obtener las galerias desde la API
     async def get_galleries(self):
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"{config.api_url}/galleries/")
-            self.galleries = [Galery(**gallery) for gallery in response.json()]
 
+            api_url = f"{os.getenv('API_URL', 'http://localhost:8000')}/galleries/me"
+            print(f"Intentando conectar a: {api_url}")  # Debug
 
-    selected_gallery: dict = None
+            # Obtener el token del AuthState
+            mitoken = AuthState.token_storage
+
+            print(f"Token: {mitoken}")  # Debug
+            headers = {
+                "Authorization": f"Bearer {mitoken}",
+                "Content-Type": "application/json"
+            }
+
+            print(f"Headers: {headers}") # Debug
+
+            # response = await client.get(api_url)
+            response = await client.get(api_url, headers=headers)
+            print(f"Status code: {response.status_code}")  # Debug
+            print(f"Response content: {response.content}")  # Debug
+            
+
+            if response.status_code == 200:
+                data = response.json()
+                self.galleries = [Galery(**gallery) for gallery in data]
+            else:
+                self.error_message = f"Error del servidor: {response.status_code}"
+                # Usar datos de ejemplo si la API falla
+                self.galleries = self.test_galleries
+                
+
+    # selected_gallery: dict = None
+
 
 def generate_gallery_row(gallery: Galery) -> rx.Component:
     return rx.table.row(
@@ -46,6 +105,7 @@ def generate_gallery_row(gallery: Galery) -> rx.Component:
         rx.table.cell(gallery.photographer_id),
         rx.table.cell(gallery.client_id),
     )
+
 
 def gallery_table() -> rx.Component:
     return rx.vstack(
@@ -59,18 +119,19 @@ def gallery_table() -> rx.Component:
                     rx.table.column_header_cell("ID del Cliente"),
                 )
             ),
-            rx.table.body(
-                rx.foreach(GalleryState.galleries, generate_gallery_row)
-            ),
+            rx.table.body(rx.foreach(GalleryState.galleries, generate_gallery_row)),
             variant="surface",
             size="3",
             width="100%",
-    )
-        
+        )
     )
 
+
 # Decorador de la página para obtener las galerías
-@rx.page(on_load=GalleryState.get_galleries)
+@rx.page(
+    "/galleries", 
+    on_load=[AuthState.check_authentication, GalleryState.get_galleries]
+)
 def galleries_page() -> rx.Component:
     return rx.container(
         rx.color_mode.button(position="top-right"),
@@ -79,11 +140,12 @@ def galleries_page() -> rx.Component:
             gallery_table(),
             spacing="4",
             justify="center",
-        )
+        ),
     )
 
+
 '''import reflex as rx
-from fotoflow.state.auth_state import AuthState
+
 
 class GalleryState(rx.State):
     """Estado para la gestión de galerías."""

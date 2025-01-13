@@ -4,10 +4,10 @@ import reflex as rx
 import os
 import httpx
 
-import logging
+# import logging
 
 # Configuración básica del logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 
 class AuthState(rx.State):
@@ -20,8 +20,10 @@ class AuthState(rx.State):
     token_storage: str = rx.LocalStorage(
         name="token"
     )  # Definir LocalStorage para persistencia del token
+
     error: str = ""
 
+    
     def set_username(self, value: str):
         """Actualizar el nombre de usuario en el estado."""
         self.username = value
@@ -29,6 +31,10 @@ class AuthState(rx.State):
     def set_password(self, value: str):
         """Actualizar la contraseña en el estado."""
         self.password = value
+
+    def get_token(self) -> str:
+        """Obtiene el token como cadena de texto."""
+        return self.token
 
     async def handle_login(self):
         """Manejar el inicio de sesión y almacenar el token."""
@@ -51,9 +57,9 @@ class AuthState(rx.State):
                     headers={"Content-Type": "application/x-www-form-urlencoded"},
                 )
 
-            logging.info(f"Status Code: {response.status_code}")
-            logging.debug(f"Response JSON: {response.json()}")
-            logging.debug(f"Response Text: {response.text}")
+            # logging.info(f"Status Code: {response.status_code}")
+            # logging.debug(f"Response JSON: {response.json()}")
+            # logging.debug(f"Response Text: {response.text}")
 
             if response.status_code == 200:
                 data = response.json()
@@ -85,11 +91,12 @@ class AuthState(rx.State):
             self.is_authenticated = True
         else:
             self.is_authenticated = False
+            
 
     async def handle_logout(self):
         """Cerrar sesión y limpiar el token."""
         self.token = ""
         self.token_storage = ""  # Eliminar el token de localStorage
         self.is_authenticated = False
-        self.token_storage.remove()
+        # self.token_storage.remove()
         return rx.redirect("/login")
