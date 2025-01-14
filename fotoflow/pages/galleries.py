@@ -66,21 +66,21 @@ class GalleryState(rx.State):
         async with httpx.AsyncClient() as client:
 
             api_url = f"{os.getenv('API_URL', 'http://localhost:8000')}/galleries/me"
-            print(f"Intentando conectar a: {api_url}")  # Debug
+            # print(f"Intentando conectar a: {api_url}")  # Debug
 
             # Obtener el token del AuthState
-            mitoken = AuthState.token_storage
+            token = AuthState.token_cookie
 
-            print(f"Token: {mitoken}")  # Debug
-            headers = {
-                "Authorization": f"Bearer {mitoken}",
+            print(f"Token: {token}")  # Debug
+            mis_headers = {
+                "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json"
             }
 
-            print(f"Headers: {headers}") # Debug
+            #print(f"Headers: {mis_headers}") # Debug
 
             # response = await client.get(api_url)
-            response = await client.get(api_url, headers=headers)
+            response = await client.get(api_url, headers=mis_headers)
             print(f"Status code: {response.status_code}")  # Debug
             print(f"Response content: {response.content}")  # Debug
             

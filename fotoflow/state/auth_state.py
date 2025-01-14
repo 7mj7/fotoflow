@@ -17,9 +17,12 @@ class AuthState(rx.State):
     password: str = ""
     is_authenticated: bool = False
     token: str = ""  # Almacena el token JWT
-    token_storage: str = rx.LocalStorage(
-        name="token"
-    )  # Definir LocalStorage para persistencia del token
+    
+    token_cookie: str = rx.Cookie(name="token")
+
+    #token_storage: str = rx.LocalStorage(name="token")  # Definir LocalStorage para persistencia del token
+
+
 
     error: str = ""
 
@@ -65,9 +68,8 @@ class AuthState(rx.State):
                 data = response.json()
                 self.token = data.get("access_token", "")
                 if self.token:
-                    self.token_storage = (
-                        self.token
-                    )  #  Almacenar el token en LocalStorage
+                    self.token_cookie = self.token
+                    #self.token_storage = (self.token)  #  Almacenar el token en LocalStorage
                     self.is_authenticated = True
                     return rx.redirect(
                         "/dashboard"
@@ -85,7 +87,8 @@ class AuthState(rx.State):
 
     async def check_authentication(self):
         """Verificar si el usuario ya está autenticado al cargar la aplicación."""
-        token = self.token_storage  # Leer directamente desde localStorage
+        #token = self.token_storage  # Leer directamente desde localStorage
+        token = self.token_cookie
         if token:
             self.token = token
             self.is_authenticated = True
@@ -96,7 +99,8 @@ class AuthState(rx.State):
     async def handle_logout(self):
         """Cerrar sesión y limpiar el token."""
         self.token = ""
-        self.token_storage = ""  # Eliminar el token de localStorage
+        #self.token_storage = ""  # Eliminar el token de localStorage
+        self.token_cookie = ""
         self.is_authenticated = False
         # self.token_storage.remove()
         return rx.redirect("/login")
