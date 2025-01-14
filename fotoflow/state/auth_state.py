@@ -68,8 +68,10 @@ class AuthState(rx.State):
                 data = response.json()
                 self.token = data.get("access_token", "")
                 if self.token:
-                    self.token_cookie = self.token
-                    #self.token_storage = (self.token)  #  Almacenar el token en LocalStorage
+                    self.token_cookie = self.token #  Almacenar el token en la cookie
+                    #print(f"Token almacenado en cookie: {self.token_cookie}") # Debug
+                    #print(f"Token: {self.token}") # Debug
+                    
                     self.is_authenticated = True
                     return rx.redirect(
                         "/dashboard"
@@ -87,8 +89,9 @@ class AuthState(rx.State):
 
     async def check_authentication(self):
         """Verificar si el usuario ya está autenticado al cargar la aplicación."""
-        #token = self.token_storage  # Leer directamente desde localStorage
+        # Leer el token almacenado en la cookie
         token = self.token_cookie
+        print(f"***Token cookie desde check_authentication: {token}")
         if token:
             self.token = token
             self.is_authenticated = True

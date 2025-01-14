@@ -63,13 +63,20 @@ class GalleryState(rx.State):
 
     # Metodo para obtener las galerias desde la API
     async def get_galleries(self):
+
+        AuthState.check_authentication()
+        # Obtener el token del AuthState
+        token = AuthState.get_token()
+        print(f"Token desde get_galleries: {token}")
+
+
         async with httpx.AsyncClient() as client:
 
             api_url = f"{os.getenv('API_URL', 'http://localhost:8000')}/galleries/me"
             # print(f"Intentando conectar a: {api_url}")  # Debug
 
-            # Obtener el token del AuthState
-            token = AuthState.token_cookie
+            
+            #token = "Hola caracola"
 
             print(f"Token: {token}")  # Debug
             mis_headers = {
@@ -130,7 +137,8 @@ def gallery_table() -> rx.Component:
 # Decorador de la página para obtener las galerías
 @rx.page(
     "/galleries", 
-    on_load=[AuthState.check_authentication, GalleryState.get_galleries]
+    #on_load=[AuthState.check_authentication, GalleryState.get_galleries]
+    on_load=GalleryState.get_galleries
 )
 def galleries_page() -> rx.Component:
     return rx.container(
