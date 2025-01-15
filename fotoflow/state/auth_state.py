@@ -1,109 +1,106 @@
-# state/auth_state.py
+# fotoflow/state/auth_state.py
+
+"""
+Módulo de Estado de Autenticación.
+
+Este módulo implementa el estado global de autenticación usando Reflex State.
+Gestiona todo el ciclo de vida de la autenticación de usuarios, incluyendo:
+
+Funcionalidades:
+- Manejo del token JWT y estado de autenticación
+- Proceso de login/logout
+- Gestión de errores de autenticación
+- Estado de carga durante operaciones asíncronas
+- Almacenamiento temporal de credenciales
+
+Variables de estado:
+- token: Almacena el token JWT actual
+- is_authenticated: Boolean que indica si el usuario está autenticado
+- error: Mensajes de error durante la autenticación
+- loading: Estado de carga durante operaciones
+- username/password: Credenciales temporales durante el login
+
+Uso:
+    auth_state = AuthState()
+    # Login
+    await auth_state.handle_login()
+    # Verificar autenticación
+    if auth_state.is_authenticated:
+        # Usuario autenticado
+    # Logout
+    auth_state.handle_logout()
+
+
+"""
 
 import reflex as rx
-import os
 import httpx
 
-# import logging
-
-# Configuración básica del logging
-# logging.basicConfig(level=logging.INFO)
-
-
 class AuthState(rx.State):
-    """Estado para autenticación con Token Bearer."""
-
+    """Estado global para la autenticación."""
+    token: str = ""
+    is_authenticated: bool = False
+    error: str = ""
+    loading: bool = False
     username: str = ""
     password: str = ""
-    is_authenticated: bool = False
-    token: str = ""  # Almacena el token JWT
+
+    @rx.var(cache=True) # Importante el decorador para que sea accesible 
+    def is_logged_in(self) -> bool:
+        #return bool(self.token)
+        return self.is_authenticated  # Usamos is_authenticated en lugar de token
     
-    token_cookie: str = rx.Cookie(name="token")
+    def set_username(self, username: str):
+        """Establece el nombre de usuario."""
+        self.username = username
+        self.error = ""  # Limpiar errores previos
 
-    #token_storage: str = rx.LocalStorage(name="token")  # Definir LocalStorage para persistencia del token
-
-
-
-    error: str = ""
-
-    
-    def set_username(self, value: str):
-        """Actualizar el nombre de usuario en el estado."""
-        self.username = value
-
-    def set_password(self, value: str):
-        """Actualizar la contraseña en el estado."""
-        self.password = value
-
-    def get_token(self) -> str:
-        """Obtiene el token como cadena de texto."""
-        return self.token
+    def set_password(self, password: str):
+        """Establece la contraseña."""
+        self.password = password
+        self.error = ""  # Limpiar errores previos    
 
     async def handle_login(self):
-        """Manejar el inicio de sesión y almacenar el token."""
-
-        if self.username == "" or self.password == "":
-            return rx.window_alert("Por favor, complete todos los campos")
-
+        """Método para hacer login."""
         try:
+            self.loading = True
+            self.error = ""
+
+            print (f"Username: {self.username}")
+            print (f"Password: {self.password}")
+
             # Preparar los datos para enviar en formato x-www-form-urlencoded
             data = {
                 "username": self.username,
                 "password": self.password,
             }
-
-            # Realizar la solicitud POST al endpoint /token
+            
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{os.getenv('API_URL', 'http://localhost:8000')}/token",
+                    "http://localhost:8000/token",
                     data=data,  # usa 'data' para form-urlencoded
-                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},                    
                 )
 
-            # logging.info(f"Status Code: {response.status_code}")
-            # logging.debug(f"Response JSON: {response.json()}")
-            # logging.debug(f"Response Text: {response.text}")
-
-            if response.status_code == 200:
-                data = response.json()
-                self.token = data.get("access_token", "")
-                if self.token:
-                    self.token_cookie = self.token #  Almacenar el token en la cookie
-                    #print(f"Token almacenado en cookie: {self.token_cookie}") # Debug
-                    #print(f"Token: {self.token}") # Debug
-                    
-                    self.is_authenticated = True
-                    return rx.redirect(
-                        "/dashboard"
-                    )  # Redireccionar a la página de dashboard
+                
+                #print (f"Status code: {response.status_code}")
+                #print (f"Response content: {response.content}")
+                if response.status_code == 200:
+                    data = response.json()
+                    self.token = data.get("access_token", "")
+                    self.is_authenticated = bool(self.token)
+                    self.username = ""
+                    self.password = ""
+                    return rx.redirect("/dashboard")
                 else:
-                    return rx.window_alert("Token no recibido del servidor.")
-            else:
-                # Manejar errores de autenticación
-                error = response.json().get("detail", "Error al autenticar")
-                return rx.window_alert(f"Error: {error}")
-        except httpx.RequestError as e:
-            return rx.window_alert(f"Error de solicitud: {str(e)}")
+                    self.error = "Usuario o contraseña incorrectos"
         except Exception as e:
-            return rx.window_alert(f"Error inesperado: {str(e)}")
+            self.error = str(e)
+        finally:
+            self.loading = False
 
-    async def check_authentication(self):
-        """Verificar si el usuario ya está autenticado al cargar la aplicación."""
-        # Leer el token almacenado en la cookie
-        token = self.token_cookie
-        print(f"***Token cookie desde check_authentication: {token}")
-        if token:
-            self.token = token
-            self.is_authenticated = True
-        else:
-            self.is_authenticated = False
-            
-
-    async def handle_logout(self):
-        """Cerrar sesión y limpiar el token."""
+    def handle_logout(self):
+        """Método para hacer logout."""
         self.token = ""
-        #self.token_storage = ""  # Eliminar el token de localStorage
-        self.token_cookie = ""
         self.is_authenticated = False
-        # self.token_storage.remove()
         return rx.redirect("/login")

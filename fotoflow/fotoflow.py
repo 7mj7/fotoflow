@@ -1,55 +1,60 @@
 # fotoflow/fotoflow.py
-
 import reflex as rx
+from .pages.login import login
+from .pages.dashboard import dashboard
 
-from fotoflow.pages.login import login_page
-from fotoflow.pages.dashboard import dashboard_page
-from fotoflow.pages.galleries import galleries_page
-#from fotoflow.pages.profile import profile_page
+from .pages.users import users
+# from .pages.profile import profile
+from .state.auth_state import AuthState
 
-from rxconfig import config
-
-
-class State(rx.State):
-    """El estado de la aplicación."""
-    ...
+# Define your app-wide styles
+style = {
+    "background_color": "rgb(248, 250, 252)",
+    "min_height": "100vh",
+}
 
 
+# Define the app layout
 def index() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(position="top-right"),
+    return rx.box(
         rx.vstack(
-            rx.heading("FotoFlow", size="9"),
-            rx.text("Gestión profesional de fotografías"),
-            rx.link(
-                rx.button("Iniciar Sesión"),
-                href="/login",
+            rx.cond(
+                AuthState.is_authenticated,
+                rx.vstack(
+                    rx.heading("Welcome back!", size="4"),
+                    rx.button(
+                        "Go to Dashboard",
+                        on_click=lambda: rx.redirect("/dashboard"),
+                        color_scheme="blue",
+                    ),
+                ),
+                rx.vstack(
+                    rx.heading("Bienvenido a FotoFlow", size="4"),
+                    rx.text("Por favor inicie sesión para continuar"),
+                    rx.button(
+                        "Iniciar sesión",
+                        on_click=lambda: rx.redirect("/login"),
+                        color_scheme="blue",
+                    ),
+                ),
             ),
-            rx.heading("Pruebas", size="6"),
-            # Dashboard
-            rx.link(
-                rx.button("Dashboard"),
-                href="/dashboard",
-            ),
-            # Galerías
-            rx.link(
-                rx.button("Galerías"),
-                href="/galleries",
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
-            
+            padding="8",
+            spacing="4",
+            align_items="center",
+            margin="0 auto",
+            max_width="400px",
         ),
-        # rx.logo(),
+        style=style,
     )
 
 
-# Crear la aplicación
+# Create the app instance
 app = rx.App()
-app.add_page(index)
-app.add_page(login_page, route="/login")
-app.add_page(dashboard_page, route="/dashboard")
-app.add_page(galleries_page, route="/galleries")
-#app.add_page(profile_page, route="/profile")
+
+# Add pages to the app
+app.add_page(index, route="/")
+app.add_page(login, route="/login")
+app.add_page(dashboard, route="/dashboard")
+app.add_page(users, route="/users")
+# app.add_page(users, route="/users")
+# app.add_page(profile, route="/profile")
