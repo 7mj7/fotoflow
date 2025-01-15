@@ -61,4 +61,11 @@ class AuthState(rx.State):
         rx.remove_local_storage("token")
         return rx.redirect("/login")
     
-    
+
+    def set_credentials(self, email: str, password: str):
+        """Establece las credenciales del usuario"""
+        "La uso para hacer pruebas y no tener que escribir las credenciales"
+        self.username = email
+        self.password = password
+
+
