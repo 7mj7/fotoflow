@@ -16,7 +16,6 @@ class User(rx.Base):
 
 class UsersState(rx.State):
     """Estado para la página de usuarios"""
-
     users: list[Dict[str, Any]] = []  # Especificamos el tipo
     is_loading: bool = False
     error: str = ""
@@ -47,59 +46,34 @@ def users_table():
                 rx.table.column_header_cell("ID"),
                 rx.table.column_header_cell("Nombre"),                
                 rx.table.column_header_cell("Email"),
+                rx.table.column_header_cell("Acciones"),  # Nueva columna
             ),
         ),
         rx.table.body(
             rx.foreach(
-                UsersState.users, show_person
+                UsersState.users, generate_user_row
             )
         ),
         width="100%",
     )
 
-def show_person(user: User):
+def generate_user_row(user: User):
     """Show a person in a table row."""
     return rx.table.row(
         rx.table.cell(user.id),
         rx.table.cell(user.name),        
         rx.table.cell(user.email),
+        rx.table.cell(
+            rx.button(
+                "Editar",
+                #on_click=lambda: UsersState.handle_edit(user.id),
+                color_scheme="blue",
+                #size="sm",
+            )
+        ),
     )
 
 
-'''def users_table():
-    """Componente de tabla de usuarios"""
-    return rx.box(
-        rx.vstack(
-            # Encabezados
-            rx.hstack(
-                rx.text("ID", font_weight="bold"),
-                rx.text("Name", font_weight="bold"),
-                rx.text("Email", font_weight="bold"),
-                width="100%",
-                padding="2",
-                background="gray.100",
-                spacing="4",
-            ),
-            # Filas de datos
-            rx.foreach(
-                UsersState.users,
-                lambda user: rx.hstack(  # Aquí user es de tipo Dict[str, Any]
-                    rx.text(user["id"]),
-                    rx.text(user["name"]),
-                    rx.text(user["email"]),
-                    width="100%",
-                    padding="2",
-                    _hover={"background": "gray.50"},
-                    spacing="4",
-                ),
-            ),
-            width="100%",
-            border="1px solid",
-            border_color="gray.200",
-            border_radius="md",
-        )
-    )
-'''
 
 @require_auth
 def users():
