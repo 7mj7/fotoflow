@@ -3,27 +3,29 @@
 import reflex as rx
 from ..state.auth_state import AuthState
 
+
 def navbar_link(text: str, url: str) -> rx.Component:
-    return rx.link(
-        rx.text(text, size="4", weight="medium"), href=url
-    )
+    return rx.link(rx.text(text, size="4", weight="medium"), href=url)
 
 
 def navbar() -> rx.Component:
     return rx.box(
         rx.desktop_only(
             rx.hstack(
-                rx.hstack(
-                    rx.image(
-                        src="/images/logo.jpg",
-                        width="2.25em",
-                        height="auto",
-                        border_radius="25%",
+                # --
+                # --
+                rx.link(
+                    rx.hstack(
+                        rx.image(
+                            src="/images/logo.jpg",
+                            width="2.25em",
+                            height="auto",
+                            border_radius="25%",
+                        ),
+                        rx.heading("FotoFlow", size="7", weight="bold"),
+                        align_items="center",
                     ),
-                    rx.heading(
-                        "FotoFlow", size="7", weight="bold"
-                    ),
-                    align_items="center",
+                    href="/dashboard",
                 ),
                 rx.hstack(
                     navbar_link("Usuarios", "/users"),
@@ -46,15 +48,11 @@ def navbar() -> rx.Component:
                         height="auto",
                         border_radius="25%",
                     ),
-                    rx.heading(
-                        "Reflex", size="6", weight="bold"
-                    ),
+                    rx.heading("Reflex", size="6", weight="bold"),
                     align_items="center",
                 ),
                 rx.menu.root(
-                    rx.menu.trigger(
-                        rx.icon("menu", size=30)
-                    ),
+                    rx.menu.trigger(rx.icon("menu", size=30)),
                     rx.menu.content(
                         rx.menu.item("Opción 1"),
                         rx.menu.item("Opción 2"),
@@ -75,7 +73,8 @@ def navbar() -> rx.Component:
         width="100%",
     )
 
-'''def navbar():
+
+"""def navbar():
     return rx.box(
         rx.hstack(
             rx.heading("FotoFlow", size="6"),
@@ -104,4 +103,4 @@ def navbar() -> rx.Component:
         background="white",
         border_bottom="1px solid #eaeaea",
     )
-'''
+"""
