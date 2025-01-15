@@ -9,6 +9,7 @@ import os
 
 
 class APIClient:
+
     def __init__(self):
         self.base_url = os.getenv("API_URL", "http://localhost:8000")
 
@@ -46,7 +47,9 @@ class APIClient:
             else:
                 return {"error": "Usuario o contraseña incorrectos"}
 
-    '''async def get_users(self, token: str) -> List[Dict[str, Any]]:
+    async def get_users(self, token: str) -> List[Dict[str, Any]]:
+
+        print(f"Token: {token}")
         """Obtiene la lista de usuarios."""
         try:
             async with httpx.AsyncClient() as client:
@@ -58,4 +61,4 @@ class APIClient:
                 return []
         except Exception as e:
             print(f"Error getting users: {e}")
-            return []'''
+            return []

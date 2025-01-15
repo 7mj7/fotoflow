@@ -5,6 +5,7 @@ from ..state.auth_state import AuthState
 
 def login():
     """Página de login"""
+
     return rx.vstack(
         # navbar(),  # Incluimos el navbar
         login_form(),  # Incluimos el formulario
@@ -21,13 +22,15 @@ def login_form():
             placeholder="Username",
             on_change=AuthState.set_username,
             value=AuthState.username,
+            #value="fotografo@example.com",
             margin_y="2",
         ),
         rx.input(
             type_="password",
-            placeholder="Password",
+            placeholder="Password",            
             on_change=AuthState.set_password,
             value=AuthState.password,
+            #value="foto123",
             margin_y="2",
         ),
         rx.button(

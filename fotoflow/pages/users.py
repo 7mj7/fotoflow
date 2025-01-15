@@ -11,16 +11,27 @@ class UsersState(rx.State):
     users: list[Dict[str, Any]] = []  # Especificamos el tipo
     is_loading: bool = False
     error: str = ""
+    token: str = rx.LocalStorage(name="auth_token")
+    
+
+    
 
     async def get_users(self):
+
+       
+        print(f"Token desde get_users: {self.token}")
+        print(f"Token desde get_users: {AuthState.get_token().tostring()}")
+
         """Obtiene la lista de usuarios desde la API"""
         self.is_loading = True
         self.error = ""
         try:
             client = APIClient()
             # Obtenemos el token del AuthState
-            #auth_state = AuthState #.get_current()
-            #client.token = auth_state.token
+
+            print(f"Token desde get_users: {AuthState.get_token()}")
+
+
             self.users = await client.get_users(AuthState.token)
         except Exception as e:
             self.error = f"Error al cargar usuarios: {str(e)}"
