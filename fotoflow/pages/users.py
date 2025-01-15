@@ -6,8 +6,17 @@ from ..components.auth_wrapper import require_auth
 from ..state.auth_state import AuthState
 from ..api.client import APIClient
 
+
+class User(rx.Base):
+    """Modelo de datos para una galería."""
+
+    id: int
+    name: str  # Nombre de la galería
+
+
 class UsersState(rx.State):
     """Estado para la página de usuarios"""
+
     users: list[Dict[str, Any]] = []  # Especificamos el tipo
     is_loading: bool = False
     error: str = ""
@@ -15,12 +24,16 @@ class UsersState(rx.State):
 
     async def get_users(self):
         """Obtiene la lista de usuarios desde la API"""
-        #print(f"Token desde get_users: {self.token}")
         self.is_loading = True
         self.error = ""
         try:
-            client = APIClient()        
-            self.users = await client.get_users(self.token)
+            client = APIClient()
+            # Usando la función genérica que creamos
+            response = await client.make_request("/users", self.token)
+            if "error" in response:
+                self.error = response["error"]
+            else:
+                self.users = response
         except Exception as e:
             self.error = f"Error al cargar usuarios: {str(e)}"
         finally:
@@ -28,13 +41,40 @@ class UsersState(rx.State):
 
 def users_table():
     """Componente de tabla de usuarios"""
+    return rx.table.root(
+        rx.table.header(
+            rx.table.row(
+                rx.table.column_header_cell("ID"),
+                rx.table.column_header_cell("Nombre"),                
+                rx.table.column_header_cell("Email"),
+            ),
+        ),
+        rx.table.body(
+            rx.foreach(
+                UsersState.users, show_person
+            )
+        ),
+        width="100%",
+    )
+
+def show_person(user: User):
+    """Show a person in a table row."""
+    return rx.table.row(
+        rx.table.cell(user.id),
+        rx.table.cell(user.name),        
+        rx.table.cell(user.email),
+    )
+
+
+'''def users_table():
+    """Componente de tabla de usuarios"""
     return rx.box(
         rx.vstack(
             # Encabezados
             rx.hstack(
                 rx.text("ID", font_weight="bold"),
                 rx.text("Name", font_weight="bold"),
-                rx.text("Email", font_weight="bold"),                
+                rx.text("Email", font_weight="bold"),
                 width="100%",
                 padding="2",
                 background="gray.100",
@@ -51,7 +91,7 @@ def users_table():
                     padding="2",
                     _hover={"background": "gray.50"},
                     spacing="4",
-                )
+                ),
             ),
             width="100%",
             border="1px solid",
@@ -59,6 +99,7 @@ def users_table():
             border_radius="md",
         )
     )
+'''
 
 @require_auth
 def users():
@@ -70,7 +111,7 @@ def users():
             rx.button(
                 "Actualizar",
                 on_click=UsersState.get_users,
-                #is_loading=UsersState.is_loading,
+                # is_loading=UsersState.is_loading,
                 color_scheme="blue",
                 margin_bottom="4",
             ),
