@@ -47,10 +47,55 @@ class APIClient:
             else:
                 return {"error": "Usuario o contraseña incorrectos"}
 
-    async def get_users(self, token: str) -> List[Dict[str, Any]]:
 
-        print(f"Token: {token}")
-        """Obtiene la lista de usuarios."""
+    async def make_request(
+        self, 
+        endpoint: str, 
+        token: str, 
+        method: str = "GET", 
+        data: Dict = None
+    ) -> Dict[str, Any]:
+        """
+        Función genérica para hacer peticiones a la API.
+        
+        Args:
+            endpoint: Ruta del endpoint (ej: '/users')
+            token: Token de autenticación
+            method: Método HTTP ('GET', 'POST', 'PUT', 'DELETE')
+            data: Datos para enviar en el body (opcional)
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                url = f"{self.base_url}{endpoint}"
+                headers = self._get_headers(token)
+                
+                if method == "GET":
+                    response = await client.get(url, headers=headers)
+                elif method == "POST":
+                    response = await client.post(url, headers=headers, json=data)
+                elif method == "PUT":
+                    response = await client.put(url, headers=headers, json=data)
+                elif method == "DELETE":
+                    response = await client.delete(url, headers=headers)
+                
+                if response.status_code == 200:
+                    return response.json()
+                return {"error": f"Status code: {response.status_code}"}
+                
+        except Exception as e:
+            print(f"Error in API request: {e}")
+            return {"error": str(e)}
+
+
+    # Métodos específicos usando la función genérica
+    async def get_users(self, token: str) -> List[Dict[str, Any]]:
+        response = await self.make_request("/users", token)
+        print(f"Response: {response}")
+        return response if not response.get("error") else []
+    
+
+    '''async def get_users(self, token: str) -> List[Dict[str, Any]]:        
+        """Obtiene la lista de usuarios."""        
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
@@ -61,4 +106,4 @@ class APIClient:
                 return []
         except Exception as e:
             print(f"Error getting users: {e}")
-            return []
+            return []'''

@@ -13,6 +13,7 @@ class AuthState(rx.State):
     username: str = "fotografo@example.com" # valor por defecto
     password: str = "foto123"               # valor por defecto
     
+    
 
     @rx.var(cache=True) # Importante el decorador para que sea accesible 
     def is_logged_in(self) -> bool:        

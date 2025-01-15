@@ -12,27 +12,15 @@ class UsersState(rx.State):
     is_loading: bool = False
     error: str = ""
     token: str = rx.LocalStorage(name="auth_token")
-    
-
-    
 
     async def get_users(self):
-
-       
-        print(f"Token desde get_users: {self.token}")
-        print(f"Token desde get_users: {AuthState.get_token().tostring()}")
-
         """Obtiene la lista de usuarios desde la API"""
+        #print(f"Token desde get_users: {self.token}")
         self.is_loading = True
         self.error = ""
         try:
-            client = APIClient()
-            # Obtenemos el token del AuthState
-
-            print(f"Token desde get_users: {AuthState.get_token()}")
-
-
-            self.users = await client.get_users(AuthState.token)
+            client = APIClient()        
+            self.users = await client.get_users(self.token)
         except Exception as e:
             self.error = f"Error al cargar usuarios: {str(e)}"
         finally:
@@ -56,7 +44,7 @@ def users_table():
             rx.foreach(
                 UsersState.users,
                 lambda user: rx.hstack(  # Aquí user es de tipo Dict[str, Any]
-                    rx.text(str(user["id"])),
+                    rx.text(user["id"]),
                     rx.text(user["name"]),
                     rx.text(user["email"]),
                     width="100%",
