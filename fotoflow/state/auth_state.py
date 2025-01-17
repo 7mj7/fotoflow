@@ -1,5 +1,9 @@
 # fotoflow/state/auth_state.py
 
+"""
+Este módulo implementa el estado de autenticación para la aplicación FotoFlow.
+"""
+
 import reflex as rx
 
 from fotoflow.api.client import APIClient
@@ -10,8 +14,8 @@ class AuthState(rx.State):
     token: str = rx.LocalStorage(name="auth_token")
     error: str = ""
     loading: bool = False
-    username: str = "fotografo@example.com" # valor por defecto
-    password: str = "foto123"               # valor por defecto
+    username: str = "" # valor por defecto
+    password: str = ""               # valor por defecto
     
     
 
