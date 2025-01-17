@@ -4,6 +4,7 @@ from ..components.auth_wrapper import require_auth
 from ..state.auth_state import AuthState
 from ..components.navbar import navbar  # Importar el navbar
 
+# Función para el contenido del dashboard
 def dashboard_content():
     """Contenido del dashboard que requiere autenticación"""
     return rx.vstack(

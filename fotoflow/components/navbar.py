@@ -29,9 +29,9 @@ def navbar() -> rx.Component:
                 ),
                 rx.hstack(
                     navbar_link("Usuarios", "/users"),
-                    navbar_link("Opción 2", "/#"),
-                    navbar_link("Opción 3", "/#"),
-                    navbar_link("Opción 4", "/#"),
+                    navbar_link("Galerías", "/galleries"),
+                    #navbar_link("Opción 3", "/#"),
+                    #navbar_link("Opción 4", "/#"),
                     justify="end",
                     spacing="5",
                 ),
@@ -41,23 +41,26 @@ def navbar() -> rx.Component:
         ),
         rx.mobile_and_tablet(
             rx.hstack(
-                rx.hstack(
-                    rx.image(
-                        src="/images/logo.jpg",
-                        width="2em",
-                        height="auto",
-                        border_radius="25%",
+                rx.link(                
+                    rx.hstack(
+                        rx.image(
+                            src="/images/logo.jpg",
+                            width="2em",
+                            height="auto",
+                            border_radius="25%",
+                        ),
+                        rx.heading("FotoFlow", size="6", weight="bold"),                    
+                        align_items="center",
                     ),
-                    rx.heading("Reflex", size="6", weight="bold"),
-                    align_items="center",
+                    href="/dashboard",
                 ),
                 rx.menu.root(
                     rx.menu.trigger(rx.icon("menu", size=30)),
                     rx.menu.content(
-                        rx.menu.item("Opción 1"),
-                        rx.menu.item("Opción 2"),
-                        rx.menu.item("Opción 3"),
-                        rx.menu.item("Opción 4"),
+                        rx.menu.item("Usuarios", on_click=rx.redirect("/users")),
+                        rx.menu.item("Galerías", on_click=rx.redirect("/galleries")),
+                        #rx.menu.item("Opción 3"),
+                        #rx.menu.item("Opción 4"),
                     ),
                     justify="end",
                 ),

@@ -4,13 +4,12 @@ from typing import Dict, Any
 from ..components.navbar import navbar
 from ..components.auth_wrapper import require_auth
 
-# from ..state.auth_state import AuthState
+# Para las peticiones a la API
 from ..api.client import APIClient
 
 
 class User(rx.Base):
     """Modelo de datos para un usuario"""
-
     id: int
     name: str
     email: str
@@ -18,20 +17,12 @@ class User(rx.Base):
 
 class UsersState(rx.State):
     """Estado para la página de usuarios"""
-
-    # users: list[Dict[str, Any]] = []  # Especificamos el tipo
-    users: list[User] = []  # Cambiamos el tipo a list[User]
+    users: list[User] = []  
     is_loading: bool = False
     error: str = ""
     token: str = rx.LocalStorage(name="auth_token")
 
-    # Agregamos la propiedad para almacenar el usuario seleccionado
-    selected_user: Dict[str, Any] = None
 
-    # Función para establecer el usuario seleccionado
-    def set_selected_user(self, user: Dict[str, Any]):
-        """Establece el usuario seleccionado para editar"""
-        self.selected_user = user
 
     # Función para obtener la lista de usuarios
     async def get_users(self):
@@ -55,6 +46,8 @@ class UsersState(rx.State):
 
 
 # --------------- Componentes ---------------
+
+# Tabla de usuarios
 def users_table():
     """Componente de tabla de usuarios"""
     return rx.table.root(
@@ -71,6 +64,7 @@ def users_table():
     )
 
 
+# Función para generar una fila de la tabla
 def generate_user_row(user: User):
     """Show a person in a table row."""
     return rx.table.row(
@@ -84,7 +78,7 @@ def generate_user_row(user: User):
     )
 
 
-@require_auth
+@require_auth # Agregamos el decorador para proteger la página
 def users():
     """Página de usuarios"""
     return rx.vstack(
@@ -94,7 +88,7 @@ def users():
             rx.button(
                 "Actualizar",
                 on_click=UsersState.get_users,
-                # is_loading=UsersState.is_loading,
+                is_loading=UsersState.is_loading,
                 color_scheme="blue",
                 margin_bottom="4",
             ),
@@ -106,8 +100,7 @@ def users():
                 UsersState.is_loading,
                 rx.spinner(),
                 users_table(),
-            ),
-            # edit_user_modal(),  # Agregamos el modal
+            ),            
             padding="4",
             spacing="4",
             width="100%",
@@ -119,7 +112,7 @@ def users():
     )
 
 
-# --------------- Dialogs ---------------
+# --------------- Dialogos ---------------
 
 
 # Agregamos la definición del modal
