@@ -87,7 +87,14 @@ def generate_gallery_row(gallery: Galery) -> rx.Component:
         rx.table.cell(gallery.description),
         rx.table.cell(gallery.photographer_id),
         rx.table.cell(gallery.client_id),
-        rx.table.cell("ver galeria"),
+        rx.table.cell(
+            rx.link(
+                "Ver galería",
+                href=f"/galleries/{gallery.id}",
+                color="blue.500",
+                text_decoration="none",
+            ),
+        ), # /galleries/{id}
     )
 
 

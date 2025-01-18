@@ -5,6 +5,7 @@ from .pages.dashboard import dashboard
 
 from .pages.users import users
 from .pages.galleries import galleries
+from .pages.gallery_detail import gallery_detail
 from .state.auth_state import AuthState
 
 # Define your app-wide styles
@@ -57,4 +58,5 @@ app.add_page(login, route="/login")
 app.add_page(dashboard, route="/dashboard")
 app.add_page(users, route="/users")
 app.add_page(galleries, route="/galleries")
+app.add_page(gallery_detail, route="/galleries/[id]")
 # app.add_page(profile, route="/profile")
