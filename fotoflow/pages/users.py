@@ -1,27 +1,25 @@
 # fotoflow/pages/users.py
 import reflex as rx
-from typing import Dict, Any
 from ..components.navbar import navbar
 from ..components.auth_wrapper import require_auth
 
 # Para las peticiones a la API
 from ..api.client import APIClient
 
-
+# --------------- Modelos ---------------
 class User(rx.Base):
     """Modelo de datos para un usuario"""
     id: int
     name: str
     email: str
 
-
+# --------------- Estados ---------------
 class UsersState(rx.State):
     """Estado para la página de usuarios"""
     users: list[User] = []  
     is_loading: bool = False
     error: str = ""
     token: str = rx.LocalStorage(name="auth_token")
-
 
 
     # Función para obtener la lista de usuarios
