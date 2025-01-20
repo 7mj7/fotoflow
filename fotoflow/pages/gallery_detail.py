@@ -45,7 +45,7 @@ class GalleryState(rx.State):
     @rx.event
     async def get_gallery(self):
         """Obtiene los datos de la galería desde la API"""
-        print ("Obteniendo galería")
+        print("Obteniendo galería")
         try:
             self.is_loading = True
             self.error_message = ""
@@ -114,37 +114,9 @@ def gallery_detail() -> rx.Component:
                     rx.text(GalleryState.error_message, color="red"),
                 ),
                 # Detalles de la galería
-                rx.cond(
-                    GalleryState.is_loading,
-                    rx.center(
-                        rx.spinner(size="3"),
-                        padding="8",
-                    ),
-                    rx.cond(
-                        GalleryState.current_gallery is not None,
-                        rx.box(
-                            rx.vstack(
-                                rx.text("ID:", font_weight="bold"),
-                                rx.text(GalleryState.current_gallery.id),
-                                rx.text("Nombre:", font_weight="bold"),
-                                rx.text(GalleryState.current_gallery.name),
-                                rx.text("Descripción:", font_weight="bold"),
-                                rx.text(GalleryState.current_gallery.description),
-                                rx.text("ID del Fotógrafo:", font_weight="bold"),
-                                rx.text(GalleryState.current_gallery.photographer_id),
-                                rx.text("ID del Cliente:", font_weight="bold"),
-                                align_items="start",
-                                spacing="2",
-                            ),
-                            gallery_photos(), # Sección de fotos
-                            width="100%",
-                            bg="white",
-                            border_radius="lg",
-                            box_shadow="sm",
-                            padding="4",
-                        ),
-                    ),
-                ),
+                gallery_info(),
+                # Fotos de la galeria
+                gallery_photos(),
                 width="100%",
                 max_width="1200px",
                 margin="0 auto",
@@ -159,38 +131,67 @@ def gallery_detail() -> rx.Component:
     )
 
 
+def gallery_info() -> rx.Component:
+    return (
+        rx.box(
+            rx.section(
+                rx.vstack(
+                    rx.hstack(
+                        rx.text("ID:", font_weight="bold"),
+                        rx.text(GalleryState.current_gallery.id),
+                        spacing="2",  # Espacio entre los elementos
+                    ),
+                    rx.hstack(
+                        rx.text("Nombre:", font_weight="bold"),
+                        rx.text(GalleryState.current_gallery.name),
+                        spacing="2",
+                    ),
+                    rx.hstack(
+                        rx.text("Descripción:", font_weight="bold"),
+                        rx.text(GalleryState.current_gallery.description),
+                        spacing="2",
+                    ),
+                    rx.hstack(
+                        rx.text("ID del Fotógrafo:", font_weight="bold"),
+                        rx.text(GalleryState.current_gallery.photographer_id),
+                        spacing="2",
+                    ),
+                    rx.hstack(
+                        rx.text("ID del Cliente:", font_weight="bold"),
+                        rx.text(GalleryState.current_gallery.client_id),
+                        spacing="2",
+                    ),
+                ),
+                padding_left="12px",
+                padding_right="12px",
+                background_color="var(--gray-2)",
+            ),
+            width="100%",
+        ),
+    )
+
+
 def gallery_photos() -> rx.Component:
-    return rx.vstack(
-
-        #prueba
-        #rx.image(
-        #    src='/galleries/001.jpg',
-        #    #alt=photo.description,
-        #    height="200px",
-        #    width="200px",
-        #    object_fit="cover",
-        #),
-
-        # Sección de fotos
-        rx.heading("Fotos de la Galería", size="4", margin_top="6"),
+    return rx.vstack(        
+        rx.heading("Fotos de la Galería", margin_top="6"),
         rx.grid(
             rx.foreach(
                 GalleryState.current_gallery.photos,
-                lambda photo: rx.box(
-                    rx.vstack(
-                        rx.image(
-                            src=photo.path,
-                            alt=photo.description,
-                            height="200px",
-                            width="200px",
-                            object_fit="cover",
-                        ),
-                        rx.text(
-                            photo.description,
-                            font_size="sm",
-                            text_align="center",
-                        ),
-                        rx.hstack(
+                lambda photo: rx.card(
+                    # rx.vstack(
+                    rx.image(
+                        src=photo.path,
+                        alt=photo.description,
+                        height="200px",
+                        # width="200px",
+                        # object_fit="cover",
+                    ),
+                    rx.text(
+                        photo.description,
+                        font_size="sm",
+                        text_align="center",
+                    ),
+                    rx.hstack(
                         rx.cond(
                             photo.selected,
                             rx.icon(
@@ -214,16 +215,11 @@ def gallery_photos() -> rx.Component:
                             ),
                         ),
                         spacing="2",
-                    )
-                    ),
-                    padding="2",
-                    border="1px solid",
-                    border_color="gray.200",
-                    border_radius="md",
-                    margin="2",
+                    ),                   
+                    border="1px solid",                    
                 ),
             ),
-            spacing="4",
-            justify="center",
-        ),        
+            spacing="4",            
+            columns="4",
+        ),
     )
