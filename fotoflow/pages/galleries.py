@@ -131,13 +131,32 @@ def generate_gallery_row(gallery: Galery) -> rx.Component:
         rx.table.cell(gallery.photographer_id),
         rx.table.cell(gallery.client_id),
         rx.table.cell(
-            rx.link(
-                "Ver galería",
-                href=f"/galleries/{gallery.id}",
-                color="blue.500",
-                text_decoration="none",
+            #rx.link(
+            #    "Ver galería",
+            #    href=f"/galleries/{gallery.id}",
+            #    color="blue.500",
+            #    text_decoration="none",
+            #),
+            rx.hstack(
+                rx.link(
+                    rx.button(
+                        rx.icon(
+                            tag="eye",  # Reemplaza "eye" con el nombre del icono que deseas usar
+                            color="blue.500",
+                        ),
+                        "Ver",
+                        #variant="ghost",  # Puedes ajustar el estilo del botón según tus necesidades
+                    ),
+                    href=f"/galleries/{gallery.id}",
+                    text_decoration="none",
+                ),
+                # Añadimos el diálogo de edición
+                gallery_dialog( 
+                    gallery
+                ),    
             ),
-        ), # /galleries/{id}
+            
+        ), 
     )
 
 
@@ -163,10 +182,7 @@ def galleries():
                 #    margin_right="2",
                 #),
                 # Por este:
-                gallery_dialog(
-                    is_edit=False,  # Modo creación
-                    #margin_right="2",
-                ),
+                gallery_dialog(),
                 rx.button(
                     "Actualizar",
                     on_click=GalleryState.get_galleries,
@@ -216,14 +232,34 @@ def galleries():
 
 
 # --------------- Dialogos ---------------
-def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
+#def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
+def gallery_dialog(galeria: Optional[Galery] = None):
     """Componente Dialog para crear/editar galería"""
+    is_edit = galeria is not None
     title = "Editar Galería" if is_edit else "Nueva Galería"
     button_text = "Editar" if is_edit else "Crear"
+
+    if galeria is None:
+        codigo_galeria = ""
+        nombre = ""
+        descripcion = ""
+        codigo_cliente = ""
+    else:
+        codigo_galeria = galeria.id
+        nombre = galeria.name
+        descripcion = galeria.description
+        codigo_cliente = str(galeria.client_id)
+        #print(f"Nombre: {galeria.name}")
+        #print(f"Descripcion: {galeria.description}")
+        #print(f"Cliente: {galeria.client_id}")
     
     return rx.dialog.root(
         rx.dialog.trigger(
             rx.button(
+                rx.icon(
+                    tag="file-pen-line",  # Reemplaza "eye" con el nombre del icono que deseas usar
+                    color="blue.500",
+                ),
                 button_text, 
                 color_scheme="blue" if is_edit else "green"
             )
@@ -235,15 +271,20 @@ def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
                     # ID (solo visible en edición)
                     rx.cond(
                         is_edit,
-                        rx.vstack(
+                        rx.hstack(
                             rx.text(
-                                "CÓDIGO #",
-                                as_="div",
-                                size="2",
-                                margin_bottom="4px",
+                                f"CÓDIGO #{codigo_galeria}",
+                                #as_="div",
+                                #size="2",
+                                #margin_bottom="4px",
                                 weight="bold",
                             ),
-                            rx.text(gallery.id if gallery else ""),
+                            #rx.text(codigo_galeria),
+                            #rx.cond(
+                            #    galeria,
+                            #    rx.text(galeria.id),
+                            #    rx.text(""),
+                            #),
                             margin_bottom="3",
                         ),
                     ),
@@ -256,7 +297,7 @@ def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
                         weight="bold",
                     ),
                     rx.input(
-                        default_value=gallery.name if gallery else "",
+                        default_value=nombre,        
                         placeholder="Ingrese el nombre de la galería",
                         name="name",
                         required=True,
@@ -270,7 +311,7 @@ def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
                         weight="bold",
                     ),
                     rx.text_area(
-                        default_value=gallery.description if gallery else "",
+                        default_value=descripcion,
                         placeholder="Ingrese la descripción",
                         name="description",
                     ),
@@ -283,7 +324,7 @@ def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
                         weight="bold",
                     ),
                     rx.input(
-                        default_value=gallery.client_id if gallery else None,
+                        default_value=codigo_cliente,
                         placeholder="Ingrese el ID del cliente",
                         name="client_id",
                     ),
