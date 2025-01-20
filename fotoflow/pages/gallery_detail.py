@@ -30,7 +30,6 @@ class Galery(rx.Base):
     )
     photos: list[GalleryPhoto] = []  # Lista de fotos de la galería
 
-
 class GalleryState(rx.State):
     current_gallery: Galery | None = None
     is_loading: bool = False
@@ -64,6 +63,27 @@ class GalleryState(rx.State):
             self.error_message = f"Error al cargar la galería: {str(e)}"
         finally:
             self.is_loading = False
+
+
+    @rx.event
+    async def toggle_photo_select(self, photo_id: int):
+        """Marca/desmarca una foto como seleccionada"""
+        try:
+            client = APIClient()
+            response = await client.make_request(
+                f"/galleries/{self.gallery_id}/photos/{photo_id}/select",
+                self.token,
+                method="PUT"
+            )
+
+            if "error" in response:
+                self.error_message = response["error"]
+            else:
+                # Actualizar la galería para reflejar los cambios
+                await self.get_gallery()
+
+        except Exception as e:
+            self.error_message = f"Error al actualizar la foto: {str(e)}"
 
 
 @require_auth
@@ -192,16 +212,21 @@ def gallery_photos() -> rx.Component:
                         text_align="center",
                     ),
                     rx.hstack(
-                        rx.cond(
-                            photo.selected,
-                            rx.icon(
-                                "check",
-                                color="green",
+                        rx.button(  # Envolvemos el icono en un botón
+                            rx.cond(
+                                photo.selected,
+                                rx.icon(
+                                    "check",
+                                    color="green",
+                                ),
+                                rx.icon(
+                                    "check",
+                                    color="gray",
+                                ),
                             ),
-                            rx.icon(
-                                "check",
-                                color="gray",
-                            ),
+                            on_click=lambda: GalleryState.toggle_photo_select(photo.photo_id),
+                            variant="ghost",  # Hace que el botón sea transparente
+                            padding="1",
                         ),
                         rx.cond(
                             photo.favorite,
