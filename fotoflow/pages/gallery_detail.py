@@ -248,3 +248,5 @@ def gallery_photos() -> rx.Component:
             columns="4",
         ),
     )
+
+

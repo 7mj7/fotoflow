@@ -52,6 +52,49 @@ class GalleryState(rx.State):
             self.error_message = f"Error al cargar galerías: {str(e)}"
         finally:
             self.is_loading = False
+    
+    @rx.event
+    async def create_gallery(self, form_data: dict):
+        """Crea una nueva galería"""
+        try:
+            client = APIClient()
+            response = await client.make_request(
+                "/galleries/",
+                self.token,
+                method="POST",
+                data=form_data
+            )
+
+            if "error" in response:
+                self.error_message = response["error"]
+            else:
+                # Redirigir a la lista de galerías
+                return rx.redirect("/galleries/")
+
+        except Exception as e:
+            self.error_message = f"Error al crear la galería: {str(e)}"
+
+    @rx.event
+    async def update_gallery(self, form_data: dict):
+        """Actualiza una galería existente"""
+        try:
+            client = APIClient()
+            response = await client.make_request(
+                f"/galleries/{self.gallery_id}",
+                self.token,
+                method="PUT",
+                data=form_data
+            )
+
+            if "error" in response:
+                self.error_message = response["error"]
+            else:
+                # Actualizar la galería
+                await self.get_gallery()
+
+        except Exception as e:
+            self.error_message = f"Error al actualizar la galería: {str(e)}"
+
 
 
 # --------------- Componentes ---------------
@@ -113,11 +156,16 @@ def galleries():
                     size="6",
                 ),
                 rx.spacer(),  # Empuja el botón hacia la derecha
-                rx.button(
-                    "Nueva Galería",
-                    on_click=rx.redirect("/galleries/new"),
-                    color_scheme="green",
-                    margin_right="2",
+                #rx.button(
+                #    "Nueva Galería",
+                #    on_click=rx.redirect("/galleries/new"),
+                #    color_scheme="green",
+                #    margin_right="2",
+                #),
+                # Por este:
+                gallery_dialog(
+                    is_edit=False,  # Modo creación
+                    #margin_right="2",
                 ),
                 rx.button(
                     "Actualizar",
@@ -164,4 +212,106 @@ def galleries():
         min_height="100vh",
         bg="gray.50",
         spacing="0",
+    )
+
+
+# --------------- Dialogos ---------------
+def gallery_dialog(gallery: Optional[Galery] = None, is_edit: bool = False):
+    """Componente Dialog para crear/editar galería"""
+    title = "Editar Galería" if is_edit else "Nueva Galería"
+    button_text = "Editar" if is_edit else "Crear"
+    
+    return rx.dialog.root(
+        rx.dialog.trigger(
+            rx.button(
+                button_text, 
+                color_scheme="blue" if is_edit else "green"
+            )
+        ),
+        rx.dialog.content(
+            rx.dialog.title(title),
+            rx.form(
+                rx.flex(
+                    # ID (solo visible en edición)
+                    rx.cond(
+                        is_edit,
+                        rx.vstack(
+                            rx.text(
+                                "CÓDIGO #",
+                                as_="div",
+                                size="2",
+                                margin_bottom="4px",
+                                weight="bold",
+                            ),
+                            rx.text(gallery.id if gallery else ""),
+                            margin_bottom="3",
+                        ),
+                    ),
+                    # Nombre
+                    rx.text(
+                        "Nombre",
+                        as_="div",
+                        size="2",
+                        margin_bottom="4px",
+                        weight="bold",
+                    ),
+                    rx.input(
+                        default_value=gallery.name if gallery else "",
+                        placeholder="Ingrese el nombre de la galería",
+                        name="name",
+                        required=True,
+                    ),
+                    # Descripción
+                    rx.text(
+                        "Descripción",
+                        as_="div",
+                        size="2",
+                        margin_bottom="4px",
+                        weight="bold",
+                    ),
+                    rx.text_area(
+                        default_value=gallery.description if gallery else "",
+                        placeholder="Ingrese la descripción",
+                        name="description",
+                    ),
+                    # ID del Cliente
+                    rx.text(
+                        "ID del Cliente",
+                        as_="div",
+                        size="2",
+                        margin_bottom="4px",
+                        weight="bold",
+                    ),
+                    rx.input(
+                        default_value=gallery.client_id if gallery else None,
+                        placeholder="Ingrese el ID del cliente",
+                        name="client_id",
+                    ),
+                    direction="column",
+                    spacing="3",
+                ),
+                # Botones
+                rx.flex(
+                    rx.dialog.close(
+                        rx.button(
+                            "Cancelar",
+                            color_scheme="gray",
+                            variant="soft",
+                        ),
+                    ),
+                    rx.dialog.close(
+                        rx.button(
+                            "Guardar",
+                            type="submit",
+                            color_scheme="blue",
+                        ),
+                    ),
+                    spacing="3",
+                    margin_top="16px",
+                    justify="end",
+                ),
+                #on_submit=GalleryState.update_gallery if is_edit else GalleryState.create_gallery,
+                on_submit=GalleryState.create_gallery,
+            ),
+        ),
     )
